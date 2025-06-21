@@ -1,12 +1,13 @@
 module UniversalDocumentProcessor
   class Document
-    attr_reader :file_path, :content_type, :file_size, :options
+    attr_reader :file_path, :content_type, :file_size, :options, :filename_validation
 
     def initialize(file_path_or_io, options = {})
-      @file_path = file_path_or_io.is_a?(String) ? file_path_or_io : save_temp_file(file_path_or_io)
+      @file_path = file_path_or_io.is_a?(String) ? normalize_file_path(file_path_or_io) : save_temp_file(file_path_or_io)
       @options = options
       @content_type = detect_content_type
       @file_size = File.size(@file_path)
+      @filename_validation = validate_filename_encoding
     end
 
     def process
@@ -18,6 +19,7 @@ module UniversalDocumentProcessor
         metadata: metadata,
         images: extract_images,
         tables: extract_tables,
+        filename_info: filename_info,
         processed_at: Time.current
       }
     end
@@ -69,6 +71,19 @@ module UniversalDocumentProcessor
       supported_formats.include?(file_extension.downcase)
     end
 
+    def japanese_filename?
+      Utils::JapaneseFilenameHandler.contains_japanese?(File.basename(@file_path))
+    end
+
+    def filename_info
+      {
+        original_filename: File.basename(@file_path),
+        contains_japanese: japanese_filename?,
+        validation: @filename_validation,
+        japanese_parts: Utils::JapaneseFilenameHandler.extract_japanese_parts(File.basename(@file_path))
+      }
+    end
+
     private
 
     def processor
@@ -106,7 +121,18 @@ module UniversalDocumentProcessor
     end
 
     def save_temp_file(io)
-      temp_file = Tempfile.new(['document', ".#{file_extension}"])
+      # Try to get original filename from IO if available
+      original_filename = io.respond_to?(:original_filename) ? io.original_filename : nil
+      extension = original_filename ? File.extname(original_filename) : ".#{file_extension}"
+      
+      # Create safe temporary filename
+      if original_filename && Utils::JapaneseFilenameHandler.contains_japanese?(original_filename)
+        safe_name = Utils::JapaneseFilenameHandler.create_safe_temp_filename(original_filename, 'temp')
+        temp_file = Tempfile.new([File.basename(safe_name, extension), extension])
+      else
+        temp_file = Tempfile.new(['document', extension])
+      end
+      
       temp_file.binmode
       temp_file.write(io.read)
       temp_file.close
@@ -127,8 +153,18 @@ module UniversalDocumentProcessor
         file_size: @file_size,
         content_type: @content_type,
         created_at: File.ctime(@file_path),
-        modified_at: File.mtime(@file_path)
+        modified_at: File.mtime(@file_path),
+        japanese_filename: japanese_filename?,
+        filename_encoding: @filename_validation
       }
+    end
+
+    def normalize_file_path(file_path)
+      Utils::JapaneseFilenameHandler.normalize_filename(file_path)
+    end
+
+    def validate_filename_encoding
+      Utils::JapaneseFilenameHandler.validate_filename(File.basename(@file_path))
     end
 
     def convert_to_pdf

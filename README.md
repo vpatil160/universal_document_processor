@@ -252,7 +252,7 @@ images = result[:images]
 puts "Found #{images.length} embedded images"
 ```
 
-### Processing Japanese Documents
+### Processing Japanese Documents & Filenames
 
 ```ruby
 # Process Japanese content
@@ -270,6 +270,113 @@ stats = analysis[:statistics]
 puts "Hiragana: #{stats[:hiragana_chars]}"
 puts "Katakana: #{stats[:katakana_chars]}"
 puts "Kanji: #{stats[:kanji_chars]}"
+
+# Japanese filename support
+filename = "重要な資料_2024年度.pdf"
+validation = UniversalDocumentProcessor.validate_filename(filename)
+puts "Japanese filename: #{validation[:contains_japanese]}"
+puts "Filename valid: #{validation[:valid]}"
+
+# Safe filename generation
+safe_name = UniversalDocumentProcessor.safe_filename("データファイル<重要>.xlsx")
+puts "Safe filename: #{safe_name}"  # => "データファイル_重要_.xlsx"
+
+# Process documents with Japanese filenames
+result = UniversalDocumentProcessor.process("日本語ファイル.pdf")
+puts "Original filename: #{result[:filename_info][:original_filename]}"
+puts "Contains Japanese: #{result[:filename_info][:contains_japanese]}"
+puts "Japanese parts: #{result[:filename_info][:japanese_parts]}"
+```
+
+## 🎌 Japanese Filename Support
+
+The gem provides comprehensive support for Japanese filenames across all operating systems:
+
+### Basic Filename Validation
+
+```ruby
+# Check if filename contains Japanese characters
+UniversalDocumentProcessor.japanese_filename?("日本語ファイル.pdf")
+# => true
+
+# Validate Japanese filename
+validation = UniversalDocumentProcessor.validate_filename("こんにちは世界.docx")
+puts validation[:valid]              # => true
+puts validation[:contains_japanese]  # => true
+puts validation[:japanese_parts]     # => {hiragana: ["こ","ん","に","ち","は"], katakana: [], kanji: ["世","界"]}
+
+# Handle mixed language filenames
+validation = UniversalDocumentProcessor.validate_filename("Project_プロジェクト_2024.xlsx")
+puts validation[:contains_japanese]  # => true
+```
+
+### Safe Filename Generation
+
+```ruby
+# Create cross-platform safe filenames
+problematic_name = "データファイル<重要>:管理.xlsx"
+safe_name = UniversalDocumentProcessor.safe_filename(problematic_name)
+puts safe_name  # => "データファイル_重要__管理.xlsx"
+
+# Handle extremely long Japanese filenames
+long_name = "非常に長いファイル名" * 20 + ".pdf"
+safe_name = UniversalDocumentProcessor.safe_filename(long_name)
+puts safe_name.bytesize <= 200  # => true (safely truncated)
+```
+
+### Encoding Analysis & Normalization
+
+```ruby
+# Analyze filename encoding
+filename = "データファイル.pdf"
+analysis = UniversalDocumentProcessor::Utils::JapaneseFilenameHandler.analyze_filename_encoding(filename)
+puts "Original encoding: #{analysis[:original_encoding]}"
+puts "Recommended encoding: #{analysis[:recommended_encoding]}"
+
+# Normalize filename to UTF-8
+normalized = UniversalDocumentProcessor.normalize_filename(filename)
+puts normalized.encoding  # => UTF-8
+```
+
+### Document Processing with Japanese Filenames
+
+```ruby
+# Process documents with Japanese filenames
+result = UniversalDocumentProcessor.process("重要な会議資料.pdf")
+
+# Access filename information
+filename_info = result[:filename_info]
+puts "Original: #{filename_info[:original_filename]}"
+puts "Japanese: #{filename_info[:contains_japanese]}"
+puts "Validation: #{filename_info[:validation][:valid]}"
+
+# Japanese character breakdown
+japanese_parts = filename_info[:japanese_parts]
+puts "Hiragana: #{japanese_parts[:hiragana]&.join('')}"
+puts "Katakana: #{japanese_parts[:katakana]&.join('')}"
+puts "Kanji: #{japanese_parts[:kanji]&.join('')}"
+```
+
+### Cross-Platform Compatibility
+
+```ruby
+# Test filename compatibility across platforms
+test_files = [
+  "日本語ファイル.pdf",        # Standard Japanese
+  "こんにちはworld.docx",      # Mixed Japanese-English
+  "データ_analysis.xlsx",      # Japanese with underscore
+  "会議議事録（重要）.txt"       # Japanese with parentheses
+]
+
+test_files.each do |filename|
+  validation = UniversalDocumentProcessor.validate_filename(filename)
+  safe_version = UniversalDocumentProcessor.safe_filename(filename)
+  
+  puts "#{filename}:"
+  puts "  Windows compatible: #{validation[:valid]}"
+  puts "  Safe version: #{safe_version}"
+  puts "  Byte size: #{safe_version.bytesize} bytes"
+end
 ```
 
 ## 🔍 Character Validation Features

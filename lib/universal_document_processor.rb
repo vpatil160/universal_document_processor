@@ -52,6 +52,7 @@ require_relative 'universal_document_processor/processors/archive_processor'
 require_relative 'universal_document_processor/processors/text_processor'
 require_relative 'universal_document_processor/processors/character_validator'
 require_relative 'universal_document_processor/utils/file_detector'
+require_relative 'universal_document_processor/utils/japanese_filename_handler'
 
 module UniversalDocumentProcessor
   class Error < StandardError; end
@@ -97,6 +98,23 @@ module UniversalDocumentProcessor
   # Check if text contains Japanese characters
   def self.japanese_text?(text)
     Processors::CharacterValidator.is_japanese_text?(text)
+  end
+
+  # Japanese filename support methods
+  def self.japanese_filename?(filename)
+    Utils::JapaneseFilenameHandler.contains_japanese?(filename)
+  end
+
+  def self.validate_filename(filename)
+    Utils::JapaneseFilenameHandler.validate_filename(filename)
+  end
+
+  def self.safe_filename(filename)
+    Utils::JapaneseFilenameHandler.safe_filename(filename)
+  end
+
+  def self.normalize_filename(filename)
+    Utils::JapaneseFilenameHandler.normalize_filename(filename)
   end
 
   # Convert document to different format
