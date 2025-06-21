@@ -50,6 +50,7 @@ require_relative 'universal_document_processor/processors/powerpoint_processor'
 require_relative 'universal_document_processor/processors/image_processor'
 require_relative 'universal_document_processor/processors/archive_processor'
 require_relative 'universal_document_processor/processors/text_processor'
+require_relative 'universal_document_processor/processors/character_validator'
 require_relative 'universal_document_processor/utils/file_detector'
 
 module UniversalDocumentProcessor
@@ -71,6 +72,31 @@ module UniversalDocumentProcessor
   # Get document metadata
   def self.get_metadata(file_path_or_io, options = {})
     Document.new(file_path_or_io, options).metadata
+  end
+
+  # Analyze text for invalid characters and encoding issues
+  def self.analyze_text_quality(text)
+    Processors::CharacterValidator.analyze_text(text)
+  end
+
+  # Validate file encoding and character issues
+  def self.validate_file(file_path)
+    Processors::CharacterValidator.validate_file_encoding(file_path)
+  end
+
+  # Clean text by removing invalid characters
+  def self.clean_text(text, options = {})
+    Processors::CharacterValidator.clean_text(text, options)
+  end
+
+  # Validate Japanese text specifically
+  def self.validate_japanese_text(text)
+    Processors::CharacterValidator.validate_japanese_text(text)
+  end
+
+  # Check if text contains Japanese characters
+  def self.japanese_text?(text)
+    Processors::CharacterValidator.is_japanese_text?(text)
   end
 
   # Convert document to different format
