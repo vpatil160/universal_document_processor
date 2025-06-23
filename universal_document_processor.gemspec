@@ -8,16 +8,16 @@ Gem::Specification.new do |spec|
 
   spec.summary       = "Universal document processor with AI capabilities for all file formats"
   spec.description   = "A comprehensive Ruby gem that handles document processing, text extraction, and AI-powered analysis for PDF, Word, Excel, PowerPoint, images, archives, and more with a unified API. Includes agentic AI features for document analysis, summarization, and intelligent extraction."
-  spec.homepage      = "https://github.com/vikas-vpatil/universal_document_processor"
+  spec.homepage      = "https://github.com/vpatil160/universal_document_processor"
   spec.license       = "MIT"
 
   spec.metadata = {
     "homepage_uri"      => spec.homepage,
-    "source_code_uri"   => "https://github.com/vikas-vpatil/universal_document_processor",
-    "bug_tracker_uri"   => "https://github.com/vikas-vpatil/universal_document_processor/issues",
-    "changelog_uri"     => "https://github.com/vikas-vpatil/universal_document_processor/blob/main/CHANGELOG.md",
-    "documentation_uri" => "https://github.com/vikas-vpatil/universal_document_processor/blob/main/README.md",
-    "funding_uri"       => "https://github.com/sponsors/vikas-vpatil",
+    "source_code_uri"   => "https://github.com/vpatil160/universal_document_processor",
+    "bug_tracker_uri"   => "https://github.com/vpatil160/universal_document_processor/issues",
+    "changelog_uri"     => "https://github.com/vpatil160/universal_document_processor/blob/main/CHANGELOG.md",
+    "documentation_uri" => "https://github.com/vpatil160/universal_document_processor/blob/main/README.md",
+    "funding_uri"       => "https://github.com/sponsors/vpatil160",
     "rubygems_mfa_required" => "true"
   }
 
