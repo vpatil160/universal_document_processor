@@ -84,6 +84,51 @@ module UniversalDocumentProcessor
       }
     end
 
+    # AI-powered analysis methods
+    def ai_analyze(query = nil, options = {})
+      ai_agent = create_ai_agent(options)
+      ai_agent.analyze_document(process, query)
+    end
+
+    def ai_summarize(length: :medium, options: {})
+      ai_agent = create_ai_agent(options)
+      ai_agent.summarize_document(process, length: length)
+    end
+
+    def ai_extract_info(categories = nil, options = {})
+      ai_agent = create_ai_agent(options)
+      ai_agent.extract_key_information(process, categories)
+    end
+
+    def ai_translate(target_language, options = {})
+      ai_agent = create_ai_agent(options)
+      ai_agent.translate_document(process, target_language)
+    end
+
+    def ai_classify(options = {})
+      ai_agent = create_ai_agent(options)
+      ai_agent.classify_document(process)
+    end
+
+    def ai_insights(options = {})
+      ai_agent = create_ai_agent(options)
+      ai_agent.generate_insights(process)
+    end
+
+    def ai_action_items(options = {})
+      ai_agent = create_ai_agent(options)
+      ai_agent.extract_action_items(process)
+    end
+
+    def ai_chat(message, options = {})
+      ai_agent = create_ai_agent(options)
+      ai_agent.chat(message, process)
+    end
+
+    def create_ai_agent(options = {})
+      AIAgent.new(options.merge(@options))
+    end
+
     private
 
     def processor

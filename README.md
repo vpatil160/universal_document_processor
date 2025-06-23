@@ -288,6 +288,87 @@ puts "Contains Japanese: #{result[:filename_info][:contains_japanese]}"
 puts "Japanese parts: #{result[:filename_info][:japanese_parts]}"
 ```
 
+## 🤖 AI Agent Integration
+
+The gem includes a powerful AI agent that provides intelligent document analysis and interaction capabilities using OpenAI's GPT models:
+
+### Quick AI Analysis
+
+```ruby
+# Set your OpenAI API key
+ENV['OPENAI_API_KEY'] = 'your-api-key-here'
+
+# Quick AI-powered analysis
+summary = UniversalDocumentProcessor.ai_summarize('document.pdf', length: :short)
+insights = UniversalDocumentProcessor.ai_insights('document.pdf')
+classification = UniversalDocumentProcessor.ai_classify('document.pdf')
+
+# Extract specific information
+key_info = UniversalDocumentProcessor.ai_extract_info('document.pdf', ['dates', 'names', 'amounts'])
+action_items = UniversalDocumentProcessor.ai_action_items('document.pdf')
+
+# Translate documents (great for Japanese documents)
+translation = UniversalDocumentProcessor.ai_translate('日本語文書.pdf', 'English')
+```
+
+### Interactive AI Agent
+
+```ruby
+# Create a persistent AI agent for conversations
+agent = UniversalDocumentProcessor.create_ai_agent(
+  model: 'gpt-4',
+  temperature: 0.7,
+  max_history: 10
+)
+
+# Process document and start conversation
+document = UniversalDocumentProcessor::Document.new('report.pdf')
+
+# Ask questions about the document
+response1 = document.ai_chat('What is this document about?')
+response2 = document.ai_chat('What are the key financial figures?')
+response3 = document.ai_chat('Based on our discussion, what should I focus on?')
+
+# Get conversation summary
+summary = agent.conversation_summary
+```
+
+### Advanced AI Features
+
+```ruby
+# Compare multiple documents
+comparison = UniversalDocumentProcessor.ai_compare(
+  ['doc1.pdf', 'doc2.pdf', 'doc3.pdf'], 
+  :content  # or :themes, :structure, etc.
+)
+
+# Document-specific AI analysis
+document = UniversalDocumentProcessor::Document.new('business_plan.pdf')
+
+analysis = document.ai_analyze('What are the growth projections?')
+insights = document.ai_insights
+classification = document.ai_classify
+action_items = document.ai_action_items
+
+# Japanese document support
+japanese_doc = UniversalDocumentProcessor::Document.new('プロジェクト計画書.pdf')
+translation = japanese_doc.ai_translate('English')
+summary = japanese_doc.ai_summarize(length: :medium)
+```
+
+### AI Configuration Options
+
+```ruby
+# Custom AI agent configuration
+agent = UniversalDocumentProcessor.create_ai_agent(
+  api_key: 'your-openai-key',       # OpenAI API key
+  model: 'gpt-4',                   # Model to use (gpt-4, gpt-3.5-turbo)
+  temperature: 0.3,                 # Response creativity (0.0-1.0)
+  max_history: 20,                  # Conversation memory length
+  base_url: 'https://api.openai.com/v1'  # Custom API endpoint
+)
+```
+
 ## 🎌 Japanese Filename Support
 
 The gem provides comprehensive support for Japanese filenames across all operating systems:

@@ -53,6 +53,7 @@ require_relative 'universal_document_processor/processors/text_processor'
 require_relative 'universal_document_processor/processors/character_validator'
 require_relative 'universal_document_processor/utils/file_detector'
 require_relative 'universal_document_processor/utils/japanese_filename_handler'
+require_relative 'universal_document_processor/ai_agent'
 
 module UniversalDocumentProcessor
   class Error < StandardError; end
@@ -115,6 +116,59 @@ module UniversalDocumentProcessor
 
   def self.normalize_filename(filename)
     Utils::JapaneseFilenameHandler.normalize_filename(filename)
+  end
+
+  # AI-powered document analysis methods
+  def self.ai_analyze(file_path, options = {})
+    document_result = process(file_path, options)
+    ai_agent = AIAgent.new(options)
+    ai_agent.analyze_document(document_result, options[:query])
+  end
+
+  def self.ai_summarize(file_path, length: :medium, options: {})
+    document_result = process(file_path, options)
+    ai_agent = AIAgent.new(options)
+    ai_agent.summarize_document(document_result, length: length)
+  end
+
+  def self.ai_extract_info(file_path, categories = nil, options = {})
+    document_result = process(file_path, options)
+    ai_agent = AIAgent.new(options)
+    ai_agent.extract_key_information(document_result, categories)
+  end
+
+  def self.ai_translate(file_path, target_language, options = {})
+    document_result = process(file_path, options)
+    ai_agent = AIAgent.new(options)
+    ai_agent.translate_document(document_result, target_language)
+  end
+
+  def self.ai_classify(file_path, options = {})
+    document_result = process(file_path, options)
+    ai_agent = AIAgent.new(options)
+    ai_agent.classify_document(document_result)
+  end
+
+  def self.ai_insights(file_path, options = {})
+    document_result = process(file_path, options)
+    ai_agent = AIAgent.new(options)
+    ai_agent.generate_insights(document_result)
+  end
+
+  def self.ai_action_items(file_path, options = {})
+    document_result = process(file_path, options)
+    ai_agent = AIAgent.new(options)
+    ai_agent.extract_action_items(document_result)
+  end
+
+  def self.ai_compare(file_paths, comparison_type = :content, options = {})
+    document_results = file_paths.map { |path| process(path, options) }
+    ai_agent = AIAgent.new(options)
+    ai_agent.compare_documents(document_results, comparison_type)
+  end
+
+  def self.create_ai_agent(options = {})
+    AIAgent.new(options)
   end
 
   # Convert document to different format
