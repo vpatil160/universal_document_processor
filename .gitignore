@@ -1,0 +1,59 @@
+# Gem build artifacts
+*.gem
+*.rbc
+lib/**/*.so
+pkg/
+tags
+
+# Bundle
+vendor/bundle/
+.bundle/
+
+# Test coverage
+coverage/
+
+# RSpec
+spec/reports/
+
+# YARD documentation
+doc/
+.yardoc
+
+# RuboCop cache
+.rubocop-cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Local environment files
+.env
+.env.local
+
+# Ruby version files
+.ruby-version
+.rvmrc
+
+# Bundler
+.bundle
+Gemfile.lock
+
+# Test files
+test_documents/
+test_files/
+
+# AI API keys (security)
+.openai_key 
