@@ -4,7 +4,7 @@ require 'uri'
 
 module UniversalDocumentProcessor
   class AIAgent
-    attr_reader :api_key, :model, :base_url, :conversation_history
+    attr_reader :api_key, :model, :base_url, :conversation_history, :ai_enabled
 
     def initialize(options = {})
       @api_key = options[:api_key] || ENV['OPENAI_API_KEY']
@@ -13,12 +13,15 @@ module UniversalDocumentProcessor
       @conversation_history = []
       @max_history = options[:max_history] || 10
       @temperature = options[:temperature] || 0.7
+      @ai_enabled = false
       
       validate_configuration
     end
 
     # Main document analysis with AI
     def analyze_document(document_result, query = nil)
+      ensure_ai_available!
+      
       context = build_document_context(document_result)
       
       if query
@@ -63,6 +66,8 @@ Please provide:
 
     # Ask specific questions about a document
     def ask_document_question(document_result, question)
+      ensure_ai_available!
+      
       context = build_document_context(document_result)
       
       prompt = build_question_prompt(context, question)
@@ -74,6 +79,8 @@ Please provide:
 
     # Summarize document content
     def summarize_document(document_result, length: :medium)
+      ensure_ai_available!
+      
       context = build_document_context(document_result)
       
       length_instruction = case length
@@ -92,6 +99,8 @@ Please provide:
 
     # Extract key information from document
     def extract_key_information(document_result, categories = nil)
+      ensure_ai_available!
+      
       context = build_document_context(document_result)
       categories ||= ['key_facts', 'important_dates', 'names', 'locations', 'numbers']
       
@@ -104,6 +113,8 @@ Please provide:
 
     # Translate document content
     def translate_document(document_result, target_language)
+      ensure_ai_available!
+      
       context = build_document_context(document_result)
       
       prompt = build_translation_prompt(context, target_language)
@@ -115,6 +126,8 @@ Please provide:
 
     # Generate document insights and recommendations
     def generate_insights(document_result)
+      ensure_ai_available!
+      
       context = build_document_context(document_result)
       
       prompt = build_insights_prompt(context)
@@ -126,6 +139,8 @@ Please provide:
 
     # Compare multiple documents
     def compare_documents(document_results, comparison_type = :content)
+      ensure_ai_available!
+      
       contexts = document_results.map { |doc| build_document_context(doc) }
       
       prompt = build_comparison_prompt(contexts, comparison_type)
@@ -137,6 +152,8 @@ Please provide:
 
     # Classify document type and purpose
     def classify_document(document_result)
+      ensure_ai_available!
+      
       context = build_document_context(document_result)
       
       prompt = build_classification_prompt(context)
@@ -148,6 +165,8 @@ Please provide:
 
     # Generate action items from document
     def extract_action_items(document_result)
+      ensure_ai_available!
+      
       context = build_document_context(document_result)
       
       prompt = build_action_items_prompt(context)
@@ -159,6 +178,8 @@ Please provide:
 
     # Chat about the document
     def chat(message, document_result = nil)
+      ensure_ai_available!
+      
       if document_result
         context = build_document_context(document_result)
         prompt = build_chat_prompt(context, message)
@@ -180,6 +201,10 @@ Please provide:
     def conversation_summary
       return "No conversation history" if @conversation_history.empty?
       
+      unless @ai_enabled
+        return "AI features are disabled. Cannot generate conversation summary."
+      end
+      
       history_text = @conversation_history.map do |entry|
         "Q: #{entry[:question]}\nA: #{entry[:answer]}"
       end.join("\n\n")
@@ -188,11 +213,27 @@ Please provide:
       call_openai_api(prompt)
     end
 
+    # Check if AI features are available
+    def ai_available?
+      @ai_enabled
+    end
+
     private
 
     def validate_configuration
-      raise ArgumentError, "OpenAI API key is required" unless @api_key
-      raise ArgumentError, "OpenAI API key cannot be empty" if @api_key.empty?
+      if @api_key && !@api_key.empty?
+        @ai_enabled = true
+      else
+        @ai_enabled = false
+        warn "Warning: OpenAI API key not provided. AI features will be disabled. Set OPENAI_API_KEY environment variable or pass api_key option to enable AI features."
+      end
+    end
+
+    # Ensure AI is available before making API calls
+    def ensure_ai_available!
+      unless @ai_enabled
+        raise DependencyMissingError, "AI features are not available. Please provide an OpenAI API key to use AI functionality."
+      end
     end
 
     def build_document_context(document_result)

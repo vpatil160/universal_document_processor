@@ -41,18 +41,22 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rexml", "~> 3.2"      # XML parsing for Excel files
   
   # Optional dependencies for enhanced functionality
-  # Uncomment these based on what features you want to include by default
-  # spec.add_dependency "pdf-reader", "~> 2.0"    # PDF processing
-  # spec.add_dependency "prawn", "~> 2.4"         # PDF generation
-  # spec.add_dependency "docx", "~> 0.8"          # Word documents
-  # spec.add_dependency "roo", "~> 2.8"           # Excel/Spreadsheets
-  # spec.add_dependency "mini_magick", "~> 4.11"  # Image processing
-  # spec.add_dependency "yomu", "~> 0.2"          # Universal text extraction fallback
+  # These are loaded conditionally and gracefully degrade if not available
+  spec.metadata["optional_dependencies"] = {
+    "pdf-reader" => "~> 2.0",      # PDF text extraction
+    "prawn" => "~> 2.4",           # PDF generation
+    "docx" => "~> 0.8",            # Word document processing
+    "roo" => "~> 2.8",             # Excel/Spreadsheet processing
+    "mini_magick" => "~> 4.11",    # Image processing
+    "yomu" => "~> 0.2"             # Universal text extraction fallback
+  }
   
   # Development dependencies
-  spec.add_development_dependency "rspec", "~> 3.12"
+  spec.add_development_dependency "minitest", "~> 5.0"
+  spec.add_development_dependency "minitest-reporters", "~> 1.0"
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rubocop", "~> 1.50"
   spec.add_development_dependency "yard", "~> 0.9"
   spec.add_development_dependency "bundler", "~> 2.0"
+  spec.add_development_dependency "simplecov", "~> 0.22"
 end 

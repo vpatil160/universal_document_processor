@@ -30,6 +30,7 @@ module UniversalDocumentProcessor
       def extract_images
         with_error_handling do
           return [] unless @file_path.end_with?('.docx')
+          ensure_docx_available!
           
           images = []
           doc = Docx::Document.open(@file_path)
@@ -53,6 +54,7 @@ module UniversalDocumentProcessor
       def extract_tables
         with_error_handling do
           return [] unless @file_path.end_with?('.docx')
+          ensure_docx_available!
           
           tables = []
           doc = Docx::Document.open(@file_path)
@@ -88,7 +90,15 @@ module UniversalDocumentProcessor
 
       private
 
+      def ensure_docx_available!
+        unless defined?(Docx)
+          raise DependencyMissingError, "DOCX processing requires the 'docx' gem. Install it with: gem install docx -v '~> 0.8'"
+        end
+      end
+
       def extract_docx_text
+        ensure_docx_available!
+        
         doc = Docx::Document.open(@file_path)
         text_content = []
         
@@ -109,6 +119,8 @@ module UniversalDocumentProcessor
       end
 
       def extract_docx_metadata
+        ensure_docx_available!
+        
         doc = Docx::Document.open(@file_path)
         core_properties = doc.core_properties
         

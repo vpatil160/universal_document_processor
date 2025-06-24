@@ -2,6 +2,8 @@ module UniversalDocumentProcessor
   module Processors
     class PdfProcessor < BaseProcessor
       def extract_text
+        ensure_pdf_reader_available!
+        
         with_error_handling do
           reader = PDF::Reader.new(@file_path)
           text = reader.pages.map(&:text).join("\n")
@@ -10,6 +12,8 @@ module UniversalDocumentProcessor
       end
 
       def extract_metadata
+        ensure_pdf_reader_available!
+        
         with_error_handling do
           reader = PDF::Reader.new(@file_path)
           info = reader.info || {}
@@ -32,6 +36,8 @@ module UniversalDocumentProcessor
       end
 
       def extract_images
+        ensure_pdf_reader_available!
+        
         with_error_handling do
           # Extract embedded images from PDF
           images = []
@@ -57,6 +63,8 @@ module UniversalDocumentProcessor
       end
 
       def extract_tables
+        ensure_pdf_reader_available!
+        
         with_error_handling do
           # Basic table extraction from PDF text
           tables = []
@@ -86,6 +94,12 @@ module UniversalDocumentProcessor
       end
 
       private
+
+      def ensure_pdf_reader_available!
+        unless defined?(PDF::Reader)
+          raise DependencyMissingError, "PDF processing requires the 'pdf-reader' gem. Install it with: gem install pdf-reader -v '~> 2.0'"
+        end
+      end
 
       def extract_form_fields(reader)
         # Extract PDF form fields if present
