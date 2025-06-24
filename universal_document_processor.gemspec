@@ -38,6 +38,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "marcel", "~> 1.0"     # MIME type detection
   spec.add_dependency "nokogiri", "~> 1.13"  # XML/HTML parsing
   spec.add_dependency "rubyzip", "~> 2.3"    # ZIP archives
+  spec.add_dependency "rexml", "~> 3.2"      # XML parsing for Excel files
   
   # Optional dependencies for enhanced functionality
   # Uncomment these based on what features you want to include by default

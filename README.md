@@ -16,7 +16,7 @@ A comprehensive Ruby gem that provides unified document processing capabilities 
 
 ### **Supported File Formats**
 - **📄 Documents**: PDF, DOC, DOCX, RTF
-- **📊 Spreadsheets**: XLS, XLSX, CSV
+- **📊 Spreadsheets**: XLS, XLSX, CSV, TSV
 - **📺 Presentations**: PPT, PPTX
 - **🖼️ Images**: JPG, PNG, GIF, BMP, TIFF
 - **📁 Archives**: ZIP, RAR, 7Z
@@ -234,6 +234,58 @@ tables = result[:tables]
 tables.each_with_index do |table, index|
   puts "Table #{index + 1}: #{table[:rows]} rows"
 end
+```
+
+### Processing TSV (Tab-Separated Values) Files
+
+```ruby
+# Process TSV files with built-in support
+result = UniversalDocumentProcessor.process('data.tsv')
+
+# TSV-specific metadata
+metadata = result[:metadata]
+puts "Format: #{metadata[:format]}"        # => "tsv"
+puts "Delimiter: #{metadata[:delimiter]}"  # => "tab"
+puts "Rows: #{metadata[:total_rows]}"
+puts "Columns: #{metadata[:total_columns]}"
+puts "Has headers: #{metadata[:has_headers]}"
+
+# Extract structured data
+tables = result[:tables]
+table = tables.first
+puts "Headers: #{table[:headers].join(', ')}"
+puts "Sample row: #{table[:data][1].join(' | ')}"
+
+# Format conversions
+document = UniversalDocumentProcessor::Document.new('data.tsv')
+
+# Convert TSV to CSV
+csv_output = document.to_csv
+puts "CSV conversion: #{csv_output.length} characters"
+
+# Convert TSV to JSON
+json_output = document.to_json
+puts "JSON conversion: #{json_output.length} characters"
+
+# Convert CSV to TSV
+csv_document = UniversalDocumentProcessor::Document.new('data.csv')
+tsv_output = csv_document.to_tsv
+puts "TSV conversion: #{tsv_output.length} characters"
+
+# Statistical analysis
+stats = document.extract_statistics
+sheet_stats = stats['Sheet1']
+puts "Total cells: #{sheet_stats[:total_cells]}"
+puts "Numeric cells: #{sheet_stats[:numeric_cells]}"
+puts "Text cells: #{sheet_stats[:text_cells]}"
+puts "Average value: #{sheet_stats[:average_value]}"
+
+# Data validation
+validation = document.validate_data
+sheet_validation = validation['Sheet1']
+puts "Data quality score: #{sheet_validation[:data_quality_score]}%"
+puts "Empty rows: #{sheet_validation[:empty_rows]}"
+puts "Duplicate rows: #{sheet_validation[:duplicate_rows]}"
 ```
 
 ### Processing Word Documents

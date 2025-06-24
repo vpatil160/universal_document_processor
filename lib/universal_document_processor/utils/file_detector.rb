@@ -15,6 +15,7 @@ module UniversalDocumentProcessor
         'htm' => 'text/html',
         'xml' => 'application/xml',
         'csv' => 'text/csv',
+        'tsv' => 'text/tab-separated-values',
         'json' => 'application/json',
         'jpg' => 'image/jpeg',
         'jpeg' => 'image/jpeg',

@@ -48,6 +48,42 @@ module UniversalDocumentProcessor
       []
     end
 
+    def extract_statistics
+      processor.respond_to?(:extract_statistics) ? processor.extract_statistics : {}
+    rescue => e
+      {}
+    end
+
+    def validate_data
+      processor.respond_to?(:validate_data) ? processor.validate_data : {}
+    rescue => e
+      {}
+    end
+
+    def extract_formulas
+      processor.respond_to?(:extract_formulas) ? processor.extract_formulas : []
+    rescue => e
+      []
+    end
+
+    def to_json
+      processor.respond_to?(:to_json) ? processor.to_json : process.to_json
+    rescue => e
+      process.to_json
+    end
+
+    def to_csv(sheet_name = nil)
+      processor.respond_to?(:to_csv) ? processor.to_csv(sheet_name) : ""
+    rescue => e
+      ""
+    end
+
+    def to_tsv(sheet_name = nil)
+      processor.respond_to?(:to_tsv) ? processor.to_tsv(sheet_name) : ""
+    rescue => e
+      ""
+    end
+
     def convert_to(target_format)
       case target_format.to_sym
       when :pdf
@@ -64,7 +100,7 @@ module UniversalDocumentProcessor
     end
 
     def supported_formats
-      %w[pdf docx doc xlsx xls pptx ppt txt rtf html xml csv jpg jpeg png gif bmp tiff zip rar 7z]
+      %w[pdf docx doc xlsx xls pptx ppt txt rtf html xml csv tsv jpg jpeg png gif bmp tiff zip rar 7z]
     end
 
     def supported?
@@ -139,11 +175,11 @@ module UniversalDocumentProcessor
       case @content_type
       when /pdf/
         Processors::PdfProcessor.new(@file_path, @options)
-      when /word/, /document/
+      when /wordprocessingml/, /msword/
         Processors::WordProcessor.new(@file_path, @options)
-      when /excel/, /spreadsheet/
+      when /spreadsheetml/, /ms-excel/, /csv/, /tab-separated/
         Processors::ExcelProcessor.new(@file_path, @options)
-      when /powerpoint/, /presentation/
+      when /presentationml/, /ms-powerpoint/
         Processors::PowerpointProcessor.new(@file_path, @options)
       when /image/
         Processors::ImageProcessor.new(@file_path, @options)

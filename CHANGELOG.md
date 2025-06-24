@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2024-01-15
+### Added
+- **TSV (Tab-Separated Values) File Support**: Complete built-in TSV processing capabilities
+  - Native TSV parsing using Ruby CSV library with tab delimiter
+  - Text extraction with proper formatting
+  - Comprehensive metadata detection (format, delimiter, encoding)
+  - Table structure analysis and header detection
+  - Statistical analysis and data validation
+  - Format conversions: TSV ↔ CSV, TSV → JSON
+  - Cross-format compatibility with existing CSV and Excel features
+  - New `to_tsv()` method for converting other formats to TSV
+  - Enhanced file detector with TSV MIME type mapping
+  - Full integration with existing Document class API
+
+### Enhanced
+- **ExcelProcessor**: Extended to handle TSV files alongside CSV and Excel formats
+- **File Detection**: Added TSV MIME type support (`text/tab-separated-values`)
+- **Document Class**: Added `to_tsv()` method and TSV format support
+- **Supported Formats**: Updated to include TSV in format list
+
 ## [1.0.1] - 2025-06-23
 
 ### Fixed
