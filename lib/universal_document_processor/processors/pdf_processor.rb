@@ -9,6 +9,9 @@ module UniversalDocumentProcessor
           text = reader.pages.map(&:text).join("\n")
           text.strip.empty? ? "No text content found in PDF" : text
         end
+      rescue => e
+        # Fallback to Yomu if pdf-reader fails
+        fallback_text_extraction(e)
       end
 
       def extract_metadata
@@ -113,6 +116,20 @@ module UniversalDocumentProcessor
         []
       rescue
         []
+      end
+
+      def fallback_text_extraction(original_error)
+        if defined?(Yomu)
+          begin
+            text = Yomu.new(@file_path).text
+            return text unless text.nil? || text.strip.empty?
+            "No text content found in PDF"
+          rescue => yomu_error
+            raise ProcessingError, "PDF text extraction failed. pdf-reader error: #{original_error.message}. Yomu fallback error: #{yomu_error.message}"
+          end
+        else
+          raise ProcessingError, "PDF text extraction failed: #{original_error.message}. Consider installing 'yomu' gem for fallback extraction: gem install yomu"
+        end
       end
     end
   end

@@ -10,7 +10,11 @@ module UniversalDocumentProcessor
 
       def extract_text
         # Fallback to universal text extraction
-        Yomu.new(@file_path).text
+        if defined?(Yomu)
+          Yomu.new(@file_path).text
+        else
+          raise ProcessingError, "Universal text extraction requires the 'yomu' gem. Install it with: gem install yomu -v '~> 0.2'"
+        end
       rescue => e
         raise ProcessingError, "Failed to extract text: #{e.message}"
       end

@@ -31,10 +31,10 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = ">= 2.7.0"
+  spec.required_ruby_version = ">= 2.2.2"
 
   # Core dependencies - essential ones
-  spec.add_dependency "activesupport", "~> 7.0"
+  spec.add_dependency "activesupport", ">= 5.0", "< 9.0"
   spec.add_dependency "marcel", "~> 1.0"     # MIME type detection
   spec.add_dependency "nokogiri", "~> 1.13"  # XML/HTML parsing
   spec.add_dependency "rubyzip", "~> 2.3"    # ZIP archives
@@ -42,14 +42,7 @@ Gem::Specification.new do |spec|
   
   # Optional dependencies for enhanced functionality
   # These are loaded conditionally and gracefully degrade if not available
-  spec.metadata["optional_dependencies"] = {
-    "pdf-reader" => "~> 2.0",      # PDF text extraction
-    "prawn" => "~> 2.4",           # PDF generation
-    "docx" => "~> 0.8",            # Word document processing
-    "roo" => "~> 2.8",             # Excel/Spreadsheet processing
-    "mini_magick" => "~> 4.11",    # Image processing
-    "yomu" => "~> 0.2"             # Universal text extraction fallback
-  }
+  spec.metadata["optional_dependencies"] = "pdf-reader ~> 2.0, prawn ~> 2.4, docx ~> 0.8, roo ~> 2.8, mini_magick ~> 4.11, yomu ~> 0.2"
   
   # Development dependencies
   spec.add_development_dependency "minitest", "~> 5.0"
