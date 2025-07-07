@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-01-XX
+### Added
+- **ZIP File Creation**: New functionality to create ZIP archives programmatically
+  - `ArchiveProcessor.create_zip()` class method for creating ZIP files
+  - Support for creating archives from individual files or entire directories
+  - Recursive directory archiving with proper path structure preservation
+  - Comprehensive test coverage with error handling
+  - Integration with existing archive processing capabilities
+
+### Enhanced
+- **ArchiveProcessor**: Extended with ZIP creation capabilities alongside existing extraction features
+- **Archive Support**: Now supports both reading/extracting and creating ZIP archives
+
 ## [1.2.0] - 2024-01-15
 ### Added
 - **TSV (Tab-Separated Values) File Support**: Complete built-in TSV processing capabilities

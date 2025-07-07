@@ -244,4 +244,36 @@ class TestProcessors < Minitest::Test
     tsv_doc = UniversalDocumentProcessor::Document.new(@sample_files[:tsv])
     assert tsv_doc.send(:select_processor).is_a?(UniversalDocumentProcessor::Processors::ExcelProcessor)
   end
+
+  def test_archive_processor_create_zip
+    archive_class = UniversalDocumentProcessor::Processors::ArchiveProcessor
+    require 'zip'
+    require 'tmpdir'
+
+    Dir.mktmpdir do |tmpdir|
+      # Create some sample files
+      file1 = File.join(tmpdir, 'file1.txt')
+      file2 = File.join(tmpdir, 'file2.txt')
+      File.write(file1, 'Hello from file1')
+      File.write(file2, 'Hello from file2')
+
+      # Test zipping a directory
+      zip_path = File.join(tmpdir, 'archive_dir.zip')
+      archive_class.create_zip(zip_path, tmpdir)
+      assert File.exist?(zip_path)
+      entries = []
+      Zip::File.open(zip_path) { |zip| zip.each { |e| entries << e.name } }
+      assert_includes entries, 'file1.txt'
+      assert_includes entries, 'file2.txt'
+
+      # Test zipping a list of files
+      zip_path2 = File.join(tmpdir, 'archive_files.zip')
+      archive_class.create_zip(zip_path2, [file1, file2])
+      assert File.exist?(zip_path2)
+      entries2 = []
+      Zip::File.open(zip_path2) { |zip| zip.each { |e| entries2 << e.name } }
+      assert_includes entries2, 'file1.txt'
+      assert_includes entries2, 'file2.txt'
+    end
+  end
 end 

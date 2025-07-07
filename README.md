@@ -29,6 +29,7 @@ A comprehensive Ruby gem that provides unified document processing capabilities 
 - **Table Detection**: Structured data extraction
 - **Character Validation**: Invalid character detection and cleaning
 - **Multi-language Support**: Full Unicode support including Japanese (日本語)
+- **Archive Creation**: Create ZIP files from individual files or directories
 
 ### **Character & Encoding Support**
 - **Smart encoding detection** (UTF-8, Shift_JIS, EUC-JP, ISO-8859-1)
@@ -419,6 +420,119 @@ agent = UniversalDocumentProcessor.create_ai_agent(
   max_history: 20,                  # Conversation memory length
   base_url: 'https://api.openai.com/v1'  # Custom API endpoint
 )
+```
+
+## 📦 Archive Processing (ZIP Creation & Extraction)
+
+The gem provides comprehensive archive processing capabilities, including both extracting from existing archives and creating new ZIP files.
+
+### Extracting from Archives
+
+```ruby
+# Extract text and metadata from ZIP archives
+result = UniversalDocumentProcessor.process('archive.zip')
+
+# Access archive-specific metadata
+metadata = result[:metadata]
+puts "Archive type: #{metadata[:archive_type]}"           # => "zip"
+puts "Total files: #{metadata[:total_files]}"             # => 15
+puts "Uncompressed size: #{metadata[:total_uncompressed_size]} bytes"
+puts "Compression ratio: #{metadata[:compression_ratio]}%" # => 75%
+puts "Directory structure: #{metadata[:directory_structure]}"
+
+# Check for specific file types
+puts "File types: #{metadata[:file_types]}"               # => {"txt"=>5, "pdf"=>3, "jpg"=>7}
+puts "Has executables: #{metadata[:has_executable_files]}" # => false
+puts "Largest file: #{metadata[:largest_file][:path]} (#{metadata[:largest_file][:size]} bytes)"
+
+# Extract text from text files within the archive
+text_content = result[:text_content]
+puts "Combined text from archive: #{text_content.length} characters"
+```
+
+### Creating ZIP Archives
+
+```ruby
+# Create ZIP from individual files
+files_to_zip = ['document1.pdf', 'document2.txt', 'image.jpg']
+output_zip = 'my_archive.zip'
+
+zip_path = UniversalDocumentProcessor::Processors::ArchiveProcessor.create_zip(
+  output_zip, 
+  files_to_zip
+)
+puts "ZIP created: #{zip_path}"
+
+# Create ZIP from entire directory (preserves folder structure)
+directory_to_zip = '/path/to/documents'
+archive_path = UniversalDocumentProcessor::Processors::ArchiveProcessor.create_zip(
+  'directory_backup.zip',
+  directory_to_zip
+)
+puts "Directory archived: #{archive_path}"
+
+# Working with temporary directories
+require 'tmpdir'
+
+Dir.mktmpdir do |tmpdir|
+  # Create some test files
+  File.write(File.join(tmpdir, 'file1.txt'), 'Hello from file 1')
+  File.write(File.join(tmpdir, 'file2.txt'), 'Hello from file 2')
+  
+  # Create subdirectory with files
+  subdir = File.join(tmpdir, 'subfolder')
+  Dir.mkdir(subdir)
+  File.write(File.join(subdir, 'file3.txt'), 'Hello from subfolder')
+  
+  # Archive the entire directory structure
+  zip_file = File.join(tmpdir, 'complete_backup.zip')
+  UniversalDocumentProcessor::Processors::ArchiveProcessor.create_zip(zip_file, tmpdir)
+  
+  puts "Archive size: #{File.size(zip_file)} bytes"
+  
+  # Verify archive contents by processing it
+  archive_result = UniversalDocumentProcessor.process(zip_file)
+  puts "Files in archive: #{archive_result[:metadata][:total_files]}"
+end
+
+# Error handling for ZIP creation
+begin
+  UniversalDocumentProcessor::Processors::ArchiveProcessor.create_zip(
+    '/invalid/path/archive.zip',
+    ['file1.txt', 'file2.txt']
+  )
+rescue => e
+  puts "Error creating ZIP: #{e.message}"
+end
+
+# Validate input before creating ZIP
+files = ['doc1.pdf', 'doc2.txt']
+files.each do |file|
+  unless File.exist?(file)
+    puts "Warning: #{file} does not exist"
+  end
+end
+```
+
+### Archive Analysis
+
+```ruby
+# Analyze archive security and structure
+result = UniversalDocumentProcessor.process('suspicious_archive.zip')
+metadata = result[:metadata]
+
+# Security analysis
+if metadata[:has_executable_files]
+  puts "⚠️  Archive contains executable files"
+end
+
+# Directory structure analysis
+structure = metadata[:directory_structure]
+puts "Top-level directories: #{structure.keys.join(', ')}"
+
+# File type distribution
+file_types = metadata[:file_types]
+puts "Most common file type: #{file_types.max_by{|k,v| v}}"
 ```
 
 ## 🎌 Japanese Filename Support

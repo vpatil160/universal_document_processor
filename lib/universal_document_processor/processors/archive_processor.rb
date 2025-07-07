@@ -91,6 +91,32 @@ module UniversalDocumentProcessor
         super + [:list_files, :extract_file, :extract_all, :analyze_security]
       end
 
+      # Class method to create a zip file from a list of files or a directory
+      def self.create_zip(output_zip_path, files_or_directory)
+        require 'zip'
+        files = []
+        if files_or_directory.is_a?(String) && File.directory?(files_or_directory)
+          # Recursively collect all files in the directory
+          Dir[File.join(files_or_directory, '**', '**')].each do |file|
+            files << file unless File.directory?(file)
+          end
+          base_dir = files_or_directory
+        elsif files_or_directory.is_a?(Array)
+          files = files_or_directory
+          base_dir = nil
+        else
+          raise ArgumentError, 'files_or_directory must be a directory path or an array of file paths'
+        end
+
+        Zip::File.open(output_zip_path, Zip::File::CREATE) do |zipfile|
+          files.each do |file|
+            entry_name = base_dir ? file.sub(/^#{Regexp.escape(base_dir)}\/?/, '') : File.basename(file)
+            zipfile.add(entry_name, file)
+          end
+        end
+        output_zip_path
+      end
+
       private
 
       def detect_archive_type
