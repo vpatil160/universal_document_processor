@@ -206,6 +206,16 @@ module UniversalDocumentProcessor
     Document.new(file_path_or_io, options).convert_to(target_format)
   end
 
+  # Create PDF from any supported document
+  def self.create_pdf(file_path, options = {})
+    Document.new(file_path, options).convert_to(:pdf)
+  end
+
+  # Check if PDF creation is available
+  def self.pdf_creation_available?
+    defined?(Prawn)
+  end
+
   # Batch process multiple documents
   def self.batch_process(file_paths, options = {})
     file_paths.map do |file_path|

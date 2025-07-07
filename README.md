@@ -219,6 +219,33 @@ puts "Tables found: #{result[:tables].length}"
 full_text = result[:text_content]
 ```
 
+### Creating PDF Documents
+
+```ruby
+# Install Prawn for PDF creation (optional dependency)
+# gem install prawn
+
+# Create PDF from any supported document format
+pdf_path = UniversalDocumentProcessor.create_pdf('document.docx')
+puts "PDF created at: #{pdf_path}"
+
+# Or use the convert method
+pdf_path = UniversalDocumentProcessor.convert('spreadsheet.xlsx', :pdf)
+
+# Check if PDF creation is available
+if UniversalDocumentProcessor.pdf_creation_available?
+  puts "PDF creation is available!"
+else
+  puts "Install 'prawn' gem to enable PDF creation: gem install prawn"
+end
+
+# The created PDF includes:
+# - Document title and metadata
+# - Full text content with formatting
+# - Tables (if present in original document)
+# - File information and statistics
+```
+
 ### Processing Excel Spreadsheets
 
 ```ruby

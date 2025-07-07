@@ -286,13 +286,97 @@ module UniversalDocumentProcessor
     end
 
     def convert_to_pdf
-      # Implementation for PDF conversion
-      raise NotImplementedError, "PDF conversion not yet implemented"
+      ensure_prawn_available!
+      
+      output_path = @file_path.gsub(File.extname(@file_path), '.pdf')
+      
+      Prawn::Document.generate(output_path) do |pdf|
+        # Add title
+        pdf.font_size 18
+        pdf.text "Document: #{File.basename(@file_path)}", style: :bold
+        pdf.move_down 20
+        
+        # Add metadata section
+        pdf.font_size 12
+        pdf.text "Document Information", style: :bold
+        pdf.move_down 10
+        
+        metadata_info = metadata
+        pdf.text "File Size: #{format_file_size(@file_size)}"
+        pdf.text "Content Type: #{@content_type}"
+        pdf.text "Created: #{metadata_info[:created_at]}" if metadata_info[:created_at]
+        pdf.text "Modified: #{metadata_info[:modified_at]}" if metadata_info[:modified_at]
+        pdf.move_down 20
+        
+        # Add content section
+        pdf.text "Content", style: :bold
+        pdf.move_down 10
+        
+        text_content = extract_text
+        if text_content && !text_content.strip.empty?
+          pdf.font_size 10
+          pdf.text text_content
+        else
+          pdf.text "No text content available for this document."
+        end
+        
+        # Add tables if available
+        tables = extract_tables
+        unless tables.empty?
+          pdf.start_new_page
+          pdf.font_size 12
+          pdf.text "Tables", style: :bold
+          pdf.move_down 10
+          
+          tables.each_with_index do |table, index|
+            pdf.text "Table #{index + 1}", style: :bold
+            pdf.move_down 5
+            
+            if table[:content] && !table[:content].empty?
+              # Format table data for Prawn
+              table_data = table[:content].first(20) # Limit to first 20 rows
+              pdf.table(table_data, header: true) do
+                row(0).font_style = :bold
+                cells.size = 8
+                cells.padding = 3
+              end
+            end
+            pdf.move_down 15
+          end
+        end
+      end
+      
+      output_path
+    rescue => e
+      raise ProcessingError, "Failed to create PDF: #{e.message}"
     end
 
     def convert_to_html
       # Implementation for HTML conversion
       raise NotImplementedError, "HTML conversion not yet implemented"
+    end
+
+    private
+
+    def ensure_prawn_available!
+      unless defined?(Prawn)
+        raise DependencyMissingError, "PDF creation requires the 'prawn' gem. Install it with: gem install prawn -v '~> 2.4'"
+      end
+    end
+
+    def format_file_size(bytes)
+      return "0 B" if bytes == 0
+      
+      units = ['B', 'KB', 'MB', 'GB']
+      size = bytes.to_f
+      unit_index = 0
+      
+      while size >= 1024 && unit_index < units.length - 1
+        size /= 1024
+        unit_index += 1
+      end
+      
+      "#{size.round(2)} #{units[unit_index]}"
     end
   end
 end 
