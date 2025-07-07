@@ -111,7 +111,7 @@ result = UniversalDocumentProcessor.process('document.pdf')
   },
   images: [...],
   tables: [...],
-  processed_at: 2024-01-15 10:30:00 UTC
+  processed_at: 2025-07-06 10:30:00 UTC
 }
 ```
 
