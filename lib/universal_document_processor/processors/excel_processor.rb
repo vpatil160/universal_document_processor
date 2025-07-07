@@ -6,11 +6,32 @@ require 'csv'
 module UniversalDocumentProcessor
   module Processors
     class ExcelProcessor < BaseProcessor
+      MAX_FILE_SIZE = 50 * 1024 * 1024 # 50 MB
+
       def extract_text
+        validate_file
         with_error_handling do
           if @file_path.end_with?('.csv')
+            # Encoding validation for CSV
+            validation = UniversalDocumentProcessor.validate_file(@file_path)
+            unless validation[:valid]
+              return UniversalDocumentProcessor.clean_text(validation[:content], {
+                remove_null_bytes: true,
+                remove_control_chars: true,
+                normalize_whitespace: true
+              })
+            end
             extract_csv_text
           elsif @file_path.end_with?('.tsv')
+            # Encoding validation for TSV
+            validation = UniversalDocumentProcessor.validate_file(@file_path)
+            unless validation[:valid]
+              return UniversalDocumentProcessor.clean_text(validation[:content], {
+                remove_null_bytes: true,
+                remove_control_chars: true,
+                normalize_whitespace: true
+              })
+            end
             extract_tsv_text
           elsif @file_path.end_with?('.xlsx')
             extract_xlsx_text_builtin
@@ -207,6 +228,15 @@ module UniversalDocumentProcessor
       end
 
       private
+
+      def validate_file
+        raise ProcessingError, "File not found: #{@file_path}" unless File.exist?(@file_path)
+        raise ProcessingError, "File is empty: #{@file_path}" if File.zero?(@file_path)
+        # Large file safeguard
+        if File.size(@file_path) > MAX_FILE_SIZE
+          raise ProcessingError, "File size #{File.size(@file_path)} exceeds maximum allowed (#{MAX_FILE_SIZE} bytes)"
+        end
+      end
 
       # CSV Processing Methods
       def extract_csv_text

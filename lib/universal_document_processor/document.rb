@@ -2,29 +2,62 @@ module UniversalDocumentProcessor
   class Document
     attr_reader :file_path, :content_type, :file_size, :options, :filename_validation
 
+    class LargeFileError < StandardError; end
+    class FileValidationError < StandardError; end
+    MAX_FILE_SIZE = 50 * 1024 * 1024 # 50 MB
+
     def initialize(file_path_or_io, options = {})
       @file_path = file_path_or_io.is_a?(String) ? normalize_file_path(file_path_or_io) : save_temp_file(file_path_or_io)
       @options = options
+      # 1. Check file existence and readability
+      unless File.exist?(@file_path) && File.readable?(@file_path)
+        raise FileValidationError, "File is missing or unreadable: #{@file_path}"
+      end
       @content_type = detect_content_type
       @file_size = File.size(@file_path)
+      # 2. Large file safeguard
+      if @file_size > MAX_FILE_SIZE
+        raise LargeFileError, "File size #{@file_size} exceeds maximum allowed (#{MAX_FILE_SIZE} bytes)"
+      end
       @filename_validation = validate_filename_encoding
+      # 3. Encoding validation and cleaning for text files
+      if @content_type =~ /text|plain/
+        validation = UniversalDocumentProcessor.validate_file(@file_path)
+        unless validation[:valid]
+          @cleaned_text_content = UniversalDocumentProcessor.clean_text(validation[:content], {
+            remove_null_bytes: true,
+            remove_control_chars: true,
+            normalize_whitespace: true
+          })
+        else
+          @cleaned_text_content = nil
+        end
+      end
     end
 
     def process
-      {
-        file_path: @file_path,
-        content_type: @content_type,
-        file_size: @file_size,
-        text_content: extract_text,
-        metadata: metadata,
-        images: extract_images,
-        tables: extract_tables,
-        filename_info: filename_info,
-        processed_at: Time.current
-      }
+      begin
+        {
+          file_path: @file_path,
+          content_type: @content_type,
+          file_size: @file_size,
+          text_content: extract_text,
+          metadata: metadata,
+          images: extract_images,
+          tables: extract_tables,
+          filename_info: filename_info,
+          processed_at: Time.current
+        }
+      rescue LargeFileError, FileValidationError => e
+        { error: e.class.name, message: e.message, file_path: @file_path }
+      rescue => e
+        { error: 'ProcessingError', message: e.message, file_path: @file_path }
+      end
     end
 
     def extract_text
+      # Use cleaned text if available (from encoding validation)
+      return @cleaned_text_content if defined?(@cleaned_text_content) && @cleaned_text_content
       processor.extract_text
     rescue => e
       fallback_text_extraction

@@ -3,6 +3,8 @@ module UniversalDocumentProcessor
     class BaseProcessor
       attr_reader :file_path, :options
 
+      MAX_FILE_SIZE = 50 * 1024 * 1024 # 50 MB
+
       def initialize(file_path, options = {})
         @file_path = file_path
         @options = options
@@ -11,6 +13,17 @@ module UniversalDocumentProcessor
       def extract_text
         # Fallback to universal text extraction
         if defined?(Yomu)
+          # Encoding validation for text files
+          if File.extname(@file_path) =~ /\.(txt|csv|tsv|md|json|xml|html|htm)$/i
+            validation = UniversalDocumentProcessor.validate_file(@file_path)
+            unless validation[:valid]
+              return UniversalDocumentProcessor.clean_text(validation[:content], {
+                remove_null_bytes: true,
+                remove_control_chars: true,
+                normalize_whitespace: true
+              })
+            end
+          end
           Yomu.new(@file_path).text
         else
           raise ProcessingError, "Universal text extraction requires the 'yomu' gem. Install it with: gem install yomu -v '~> 0.2'"
@@ -49,6 +62,10 @@ module UniversalDocumentProcessor
       def validate_file
         raise ProcessingError, "File not found: #{@file_path}" unless File.exist?(@file_path)
         raise ProcessingError, "File is empty: #{@file_path}" if File.zero?(@file_path)
+        # Large file safeguard
+        if File.size(@file_path) > MAX_FILE_SIZE
+          raise ProcessingError, "File size #{File.size(@file_path)} exceeds maximum allowed (#{MAX_FILE_SIZE} bytes)"
+        end
       end
 
       def with_error_handling

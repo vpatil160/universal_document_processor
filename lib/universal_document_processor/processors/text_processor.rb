@@ -1,7 +1,10 @@
 module UniversalDocumentProcessor
   module Processors
     class TextProcessor < BaseProcessor
+      MAX_FILE_SIZE = 50 * 1024 * 1024 # 50 MB
+
       def extract_text
+        validate_file
         with_error_handling do
           case detect_text_format
           when :rtf
@@ -15,6 +18,15 @@ module UniversalDocumentProcessor
           when :json
             extract_json_text
           else
+            # Encoding validation for plain text
+            validation = UniversalDocumentProcessor.validate_file(@file_path)
+            unless validation[:valid]
+              return UniversalDocumentProcessor.clean_text(validation[:content], {
+                remove_null_bytes: true,
+                remove_control_chars: true,
+                normalize_whitespace: true
+              })
+            end
             extract_plain_text
           end
         end
@@ -80,6 +92,15 @@ module UniversalDocumentProcessor
       end
 
       private
+
+      def validate_file
+        raise ProcessingError, "File not found: #{@file_path}" unless File.exist?(@file_path)
+        raise ProcessingError, "File is empty: #{@file_path}" if File.zero?(@file_path)
+        # Large file safeguard
+        if File.size(@file_path) > MAX_FILE_SIZE
+          raise ProcessingError, "File size #{File.size(@file_path)} exceeds maximum allowed (#{MAX_FILE_SIZE} bytes)"
+        end
+      end
 
       def detect_text_format
         extension = File.extname(@file_path).downcase

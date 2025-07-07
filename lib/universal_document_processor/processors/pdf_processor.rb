@@ -1,12 +1,23 @@
 module UniversalDocumentProcessor
   module Processors
     class PdfProcessor < BaseProcessor
+      MAX_FILE_SIZE = 50 * 1024 * 1024 # 50 MB
+
       def extract_text
         ensure_pdf_reader_available!
-        
+        validate_file
         with_error_handling do
           reader = PDF::Reader.new(@file_path)
           text = reader.pages.map(&:text).join("\n")
+          # Encoding validation for extracted text
+          validation = UniversalDocumentProcessor.validate_file(@file_path)
+          unless validation[:valid]
+            return UniversalDocumentProcessor.clean_text(validation[:content], {
+              remove_null_bytes: true,
+              remove_control_chars: true,
+              normalize_whitespace: true
+            })
+          end
           text.strip.empty? ? "No text content found in PDF" : text
         end
       rescue => e
@@ -101,6 +112,15 @@ module UniversalDocumentProcessor
       def ensure_pdf_reader_available!
         unless defined?(PDF::Reader)
           raise DependencyMissingError, "PDF processing requires the 'pdf-reader' gem. Install it with: gem install pdf-reader -v '~> 2.0'"
+        end
+      end
+
+      def validate_file
+        raise ProcessingError, "File not found: #{@file_path}" unless File.exist?(@file_path)
+        raise ProcessingError, "File is empty: #{@file_path}" if File.zero?(@file_path)
+        # Large file safeguard
+        if File.size(@file_path) > MAX_FILE_SIZE
+          raise ProcessingError, "File size #{File.size(@file_path)} exceeds maximum allowed (#{MAX_FILE_SIZE} bytes)"
         end
       end
 

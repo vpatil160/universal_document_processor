@@ -14,16 +14,16 @@ module UniversalDocumentProcessor
       @max_history = options[:max_history] || 10
       @temperature = options[:temperature] || 0.7
       @ai_enabled = false
-      
+
       validate_configuration
     end
 
     # Main document analysis with AI
     def analyze_document(document_result, query = nil)
       ensure_ai_available!
-      
+
       context = build_document_context(document_result)
-      
+
       if query
         # Specific query about the document
         analyze_with_query(context, query)
@@ -67,12 +67,12 @@ Please provide:
     # Ask specific questions about a document
     def ask_document_question(document_result, question)
       ensure_ai_available!
-      
+
       context = build_document_context(document_result)
-      
+
       prompt = build_question_prompt(context, question)
       response = call_openai_api(prompt)
-      
+
       add_to_history(question, response)
       response
     end
@@ -80,19 +80,19 @@ Please provide:
     # Summarize document content
     def summarize_document(document_result, length: :medium)
       ensure_ai_available!
-      
+
       context = build_document_context(document_result)
-      
+
       length_instruction = case length
       when :short then "in 2-3 sentences"
       when :medium then "in 1-2 paragraphs"
       when :long then "in detail with key points"
       else "concisely"
       end
-      
+
       prompt = build_summary_prompt(context, length_instruction)
       response = call_openai_api(prompt)
-      
+
       add_to_history("Summarize document #{length_instruction}", response)
       response
     end
@@ -100,13 +100,13 @@ Please provide:
     # Extract key information from document
     def extract_key_information(document_result, categories = nil)
       ensure_ai_available!
-      
+
       context = build_document_context(document_result)
       categories ||= ['key_facts', 'important_dates', 'names', 'locations', 'numbers']
-      
+
       prompt = build_extraction_prompt(context, categories)
       response = call_openai_api(prompt)
-      
+
       add_to_history("Extract key information: #{categories.join(', ')}", response)
       parse_extraction_response(response)
     end
@@ -114,12 +114,12 @@ Please provide:
     # Translate document content
     def translate_document(document_result, target_language)
       ensure_ai_available!
-      
+
       context = build_document_context(document_result)
-      
+
       prompt = build_translation_prompt(context, target_language)
       response = call_openai_api(prompt)
-      
+
       add_to_history("Translate to #{target_language}", response)
       response
     end
@@ -127,12 +127,12 @@ Please provide:
     # Generate document insights and recommendations
     def generate_insights(document_result)
       ensure_ai_available!
-      
+
       context = build_document_context(document_result)
-      
+
       prompt = build_insights_prompt(context)
       response = call_openai_api(prompt)
-      
+
       add_to_history("Generate insights", response)
       parse_insights_response(response)
     end
@@ -140,12 +140,12 @@ Please provide:
     # Compare multiple documents
     def compare_documents(document_results, comparison_type = :content)
       ensure_ai_available!
-      
+
       contexts = document_results.map { |doc| build_document_context(doc) }
-      
+
       prompt = build_comparison_prompt(contexts, comparison_type)
       response = call_openai_api(prompt)
-      
+
       add_to_history("Compare documents (#{comparison_type})", response)
       response
     end
@@ -153,12 +153,12 @@ Please provide:
     # Classify document type and purpose
     def classify_document(document_result)
       ensure_ai_available!
-      
+
       context = build_document_context(document_result)
-      
+
       prompt = build_classification_prompt(context)
       response = call_openai_api(prompt)
-      
+
       add_to_history("Classify document", response)
       parse_classification_response(response)
     end
@@ -166,12 +166,12 @@ Please provide:
     # Generate action items from document
     def extract_action_items(document_result)
       ensure_ai_available!
-      
+
       context = build_document_context(document_result)
-      
+
       prompt = build_action_items_prompt(context)
       response = call_openai_api(prompt)
-      
+
       add_to_history("Extract action items", response)
       parse_action_items_response(response)
     end
@@ -179,14 +179,14 @@ Please provide:
     # Chat about the document
     def chat(message, document_result = nil)
       ensure_ai_available!
-      
+
       if document_result
         context = build_document_context(document_result)
         prompt = build_chat_prompt(context, message)
       else
         prompt = build_general_chat_prompt(message)
       end
-      
+
       response = call_openai_api(prompt)
       add_to_history(message, response)
       response
@@ -200,15 +200,15 @@ Please provide:
     # Get conversation summary
     def conversation_summary
       return "No conversation history" if @conversation_history.empty?
-      
+
       unless @ai_enabled
         return "AI features are disabled. Cannot generate conversation summary."
       end
-      
+
       history_text = @conversation_history.map do |entry|
         "Q: #{entry[:question]}\nA: #{entry[:answer]}"
       end.join("\n\n")
-      
+
       prompt = "Summarize this conversation:\n\n#{history_text}"
       call_openai_api(prompt)
     end
@@ -247,13 +247,13 @@ Please provide:
         tables_count: document_result[:tables]&.length || 0,
         filename_info: document_result[:filename_info] || {}
       }
-      
+
       # Add Japanese-specific information if available
       if context[:filename_info][:contains_japanese]
         context[:japanese_filename] = true
         context[:japanese_parts] = context[:filename_info][:japanese_parts]
       end
-      
+
       context
     end
 
@@ -324,8 +324,7 @@ Please provide:
 
     def build_comparison_prompt(contexts, comparison_type)
       comparison_content = contexts.map.with_index do |context, index|
-        "Document #{index + 1}: #{context[:filename]}
-Content: #{truncate_content(context[:text_content], 1500)}"
+        "Document #{index + 1}: #{context[:filename]}\nContent: #{truncate_content(context[:text_content], 1500)}"
       end.join("\n\n---\n\n")
 
       "You are an AI analyst. Compare these documents focusing on #{comparison_type}:
@@ -404,15 +403,15 @@ Please respond helpfully."
 
     def call_openai_api(prompt)
       uri = URI("#{@base_url}/chat/completions")
-      
+
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
       http.read_timeout = 60
-      
+
       request = Net::HTTP::Post.new(uri)
       request['Content-Type'] = 'application/json'
       request['Authorization'] = "Bearer #{@api_key}"
-      
+
       request.body = {
         model: @model,
         messages: [
@@ -421,16 +420,16 @@ Please respond helpfully."
             content: "You are an intelligent document processing assistant with expertise in analyzing, summarizing, and extracting information from various document types. You support multiple languages including Japanese."
           },
           {
-            role: "user", 
+            role: "user",
             content: prompt
           }
         ],
         temperature: @temperature,
         max_tokens: 2000
       }.to_json
-      
+
       response = http.request(request)
-      
+
       if response.code.to_i == 200
         result = JSON.parse(response.body)
         result.dig('choices', 0, 'message', 'content') || "No response generated"
@@ -446,14 +445,14 @@ Please respond helpfully."
         answer: answer,
         timestamp: Time.now
       }
-      
+
       # Keep only the most recent conversations
       @conversation_history = @conversation_history.last(@max_history) if @conversation_history.length > @max_history
     end
 
     def truncate_content(content, max_length)
       return "" unless content.is_a?(String)
-      
+
       if content.length > max_length
         "#{content[0...max_length]}...\n\n[Content truncated for analysis]"
       else
@@ -463,16 +462,16 @@ Please respond helpfully."
 
     def format_file_size(bytes)
       return "0 B" if bytes == 0
-      
+
       units = ['B', 'KB', 'MB', 'GB']
       size = bytes.to_f
       unit_index = 0
-      
+
       while size >= 1024 && unit_index < units.length - 1
         size /= 1024
         unit_index += 1
       end
-      
+
       "#{size.round(2)} #{units[unit_index]}"
     end
 
@@ -490,7 +489,7 @@ Please respond helpfully."
       rescue JSON::ParserError
         # Fall back to plain text response
       end
-      
+
       response
     end
 

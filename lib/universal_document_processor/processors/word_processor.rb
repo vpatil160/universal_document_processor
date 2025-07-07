@@ -1,11 +1,32 @@
 module UniversalDocumentProcessor
   module Processors
     class WordProcessor < BaseProcessor
+      MAX_FILE_SIZE = 50 * 1024 * 1024 # 50 MB
+
       def extract_text
+        validate_file
         with_error_handling do
           if @file_path.end_with?('.docx')
+            # Encoding validation for docx (if possible)
+            validation = UniversalDocumentProcessor.validate_file(@file_path)
+            unless validation[:valid]
+              return UniversalDocumentProcessor.clean_text(validation[:content], {
+                remove_null_bytes: true,
+                remove_control_chars: true,
+                normalize_whitespace: true
+              })
+            end
             extract_docx_text
           elsif @file_path.end_with?('.doc')
+            # Encoding validation for doc (if possible)
+            validation = UniversalDocumentProcessor.validate_file(@file_path)
+            unless validation[:valid]
+              return UniversalDocumentProcessor.clean_text(validation[:content], {
+                remove_null_bytes: true,
+                remove_control_chars: true,
+                normalize_whitespace: true
+              })
+            end
             # Built-in .doc file processing
             fallback_text_extraction
           else
@@ -89,6 +110,15 @@ module UniversalDocumentProcessor
       end
 
       private
+
+      def validate_file
+        raise ProcessingError, "File not found: #{@file_path}" unless File.exist?(@file_path)
+        raise ProcessingError, "File is empty: #{@file_path}" if File.zero?(@file_path)
+        # Large file safeguard
+        if File.size(@file_path) > MAX_FILE_SIZE
+          raise ProcessingError, "File size #{File.size(@file_path)} exceeds maximum allowed (#{MAX_FILE_SIZE} bytes)"
+        end
+      end
 
       def ensure_docx_available!
         unless defined?(Docx)
