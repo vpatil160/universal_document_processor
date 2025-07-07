@@ -413,6 +413,89 @@ summary = japanese_doc.ai_summarize(length: :medium)
 
 ```ruby
 # Custom AI agent configuration
+## ⚙️ Agentic AI Configuration & Usage
+
+To enable and use the AI-powered features (agentic AI) in your application, follow these steps:
+
+### 1. Install AI Dependency
+
+You need the `ruby-openai` gem for AI features:
+
+```bash
+gem install ruby-openai
+```
+
+Or add to your Gemfile:
+
+```ruby
+gem 'ruby-openai'
+```
+
+Then run:
+
+```bash
+bundle install
+```
+
+### 2. Set Your OpenAI API Key
+
+You must provide your OpenAI API key for agentic AI features to work. You can do this in two ways:
+
+#### a) Environment Variable (Recommended)
+
+Set the API key in your environment (e.g., in `.env`, `application.yml`, or your deployment environment):
+
+```ruby
+ENV['OPENAI_API_KEY'] = 'your-api-key-here'
+```
+
+#### b) Pass Directly When Creating the Agent
+
+```ruby
+agent = UniversalDocumentProcessor.create_ai_agent(api_key: 'your-api-key-here')
+```
+
+### 3. Rails: Where to Configure
+
+If you are using Rails, add your configuration to:
+
+`config/initializers/universal_document_processor.rb`
+
+Example initializer:
+
+```ruby
+# config/initializers/universal_document_processor.rb
+require 'universal_document_processor'
+
+# Set your API key (or use ENV)
+ENV['OPENAI_API_KEY'] ||= 'your-api-key-here' # (or use Rails credentials)
+
+# Optionally, create a default agent with custom options
+UniversalDocumentProcessor.create_ai_agent(
+  model: 'gpt-4',
+  temperature: 0.7,
+  max_history: 10
+)
+
+Rails.logger.info "Universal Document Processor with AI agent loaded" if defined?(Rails)
+```
+
+### 4. Using Agentic AI Features
+
+You can now use the AI-powered methods:
+
+```ruby
+summary = UniversalDocumentProcessor.ai_summarize('document.pdf', length: :short)
+insights = UniversalDocumentProcessor.ai_insights('document.pdf')
+classification = UniversalDocumentProcessor.ai_classify('document.pdf')
+key_info = UniversalDocumentProcessor.ai_extract_info('document.pdf', ['dates', 'names', 'amounts'])
+action_items = UniversalDocumentProcessor.ai_action_items('document.pdf')
+translation = UniversalDocumentProcessor.ai_translate('日本語文書.pdf', 'English')
+```
+
+Or create and use a persistent agent:
+
+```ruby
 agent = UniversalDocumentProcessor.create_ai_agent(
   api_key: 'your-openai-key',       # OpenAI API key
   model: 'gpt-4',                   # Model to use (gpt-4, gpt-3.5-turbo)
@@ -420,6 +503,17 @@ agent = UniversalDocumentProcessor.create_ai_agent(
   max_history: 20,                  # Conversation memory length
   base_url: 'https://api.openai.com/v1'  # Custom API endpoint
 )
+
+# Chat about a document
+response = agent.analyze_document('report.pdf')
+```
+
+---
+
+**Note:**
+- The API key is required for all AI features.
+- You can override the model, temperature, and other options per agent.
+- For more, see the `USER_GUIDE.md` and the examples above. 
 ```
 
 ## 📦 Archive Processing (ZIP Creation & Extraction)
@@ -857,7 +951,7 @@ bundle exec rspec
 
 ## 📝 Changelog
 
-### Version 1.0.0
+### Version 1.1.0
 - Initial release
 - Support for PDF, Word, Excel, PowerPoint, images, archives
 - Character validation and cleaning
